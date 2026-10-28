@@ -1,4 +1,4 @@
-from src.transforms import clean_events, events_per_minute, revenue_by_product
+from src.transforms import clean_events, device_split, events_per_minute, revenue_by_product
 
 COLS = ("event_id STRING, user_id STRING, event_type STRING, product_id STRING, "
         "price STRING, device STRING, event_ts STRING")
@@ -48,3 +48,14 @@ def test_revenue_by_product_only_counts_purchases(spark):
     assert len(out) == 1
     assert out[0].purchases == 2
     assert out[0].revenue == 15.5
+
+
+def test_device_split_counts_events(spark):
+    rows = [
+        ("a", "1", "page_view", "1", "5", "mobile", "2026-01-01 10:00:01"),
+        ("b", "1", "page_view", "1", "5", "mobile", "2026-01-01 10:00:02"),
+        ("c", "2", "page_view", "1", "5", "desktop", "2026-01-01 10:00:03"),
+    ]
+    result = device_split(clean_events(make(spark, rows))).collect()
+    out = {r.device: (r.events, r.users) for r in result}
+    assert out == {"MOBILE": (2, 1), "DESKTOP": (1, 1)}
