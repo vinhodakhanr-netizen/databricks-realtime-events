@@ -62,7 +62,9 @@ def conversion_funnel(df: DataFrame) -> DataFrame:
     return (df.groupBy("event_type")
             .agg(F.countDistinct("user_id").alias("users"))
             .orderBy(F.desc("users")))
-    def device_split(df: DataFrame) -> DataFrame:
+
+
+def device_split(df: DataFrame) -> DataFrame:
     """Events and unique users per device."""
     return (df.groupBy("device")
             .agg(F.count("*").alias("events"),
